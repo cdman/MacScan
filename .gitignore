@@ -2,3 +2,4 @@
 __env__
 __pycache__
 dist/
+copy.sh
