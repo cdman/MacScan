@@ -1,4 +1,5 @@
 import sys
+import argparse
 
 from .browser import list_scanner_devices
 
@@ -22,7 +23,25 @@ def print_scanner_devices():
 
 
 def main(args=sys.argv[1:]):
-    print_scanner_devices()
+    parser = argparse.ArgumentParser(
+        prog="macscan",
+    )
+    subparsers = parser.add_subparsers(dest="subcommand")
+
+    subparsers.add_parser(
+        "list",
+        prog="macscan list",
+        help="list available scanner devices",
+    )
+
+    parsed_args = parser.parse_args(args if args else ["--help"])
+
+    if parsed_args.subcommand == "list":
+        print_scanner_devices()
+        sys.exit(0)
+    else:
+        print("E: Unknown command '%s'." % parsed_args.subcommand)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
