@@ -15,12 +15,13 @@ def list_scanner_devices():
     :rtype: generator<dict>
 
     E.g.::
+
         {
             "persistentIDString": "00000000-0000-0000-0000-000000000000",
             "name": "My Super Scanner",
             "transportType": "ICTransportTypeUSB",
-            "usbVendorID": 0x0000,
-            "usbProductID": 0x0000,
+            "usbVendorID": 0x0000,   # USB devices only
+            "usbProductID": 0x0000,  # USB devices only
         }
     """
     browser_delegate = DeviceBrowserDelegate.alloc().init()
@@ -42,6 +43,14 @@ def list_scanner_devices():
             "persistentIDString": device.persistentIDString(),
             "name": device.name(),
             "transportType": device.transportType(),
-            "usbVendorID": device.usbVendorID(),
-            "usbProductID": device.usbProductID(),
+            "usbVendorID": (
+                device.usbVendorID()
+                if device.transportType() == ImageCaptureCore.ICTransportTypeUSB
+                else 0x0000
+            ),
+            "usbProductID": (
+                device.usbProductID()
+                if device.transportType() == ImageCaptureCore.ICTransportTypeUSB
+                else 0x0000
+            ),
         }
