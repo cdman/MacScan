@@ -19,6 +19,7 @@ def list_scanner_devices():
         {
             "persistentIDString": "00000000-0000-0000-0000-000000000000",
             "name": "My Super Scanner",
+            "locationDescription": "Here or there...",
             "transportType": "ICTransportTypeUSB",
             "usbVendorID": 0x0000,   # USB devices only
             "usbProductID": 0x0000,  # USB devices only
@@ -42,6 +43,7 @@ def list_scanner_devices():
         yield {
             "persistentIDString": device.persistentIDString(),
             "name": device.name(),
+            "locationDescription": device.locationDescription(),
             "transportType": device.transportType(),
             "usbVendorID": (
                 device.usbVendorID()
