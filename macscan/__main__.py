@@ -4,7 +4,7 @@ import argparse
 from functools import partial
 
 from .browser import list_scanner_devices
-from .scanner import scan_document
+from .scanner import scan_document, FILE_EXT_TO_OUTPUT_FORMATS
 from .exceptions import DeviceUnavailableError
 
 
@@ -45,6 +45,9 @@ def scan_to_file(parsed_args):
     except DeviceUnavailableError as error:
         print("E: %s" % str(error))
         sys.exit(1)
+    except ValueError as error:
+        print("E: %s" % str(error))
+        sys.exit(1)
 
 
 def main(args=sys.argv[1:]):
@@ -66,7 +69,8 @@ def main(args=sys.argv[1:]):
     )
     scan_parser.add_argument(
         "output",
-        help="Output file path",
+        help="output file path (file's extension must be one of %s)"
+        % ", ".join(['"%s"' % k for k in FILE_EXT_TO_OUTPUT_FORMATS.keys()]),
         type=partial(_type_path, os.W_OK),
     )
 

@@ -1,6 +1,9 @@
+import pathlib
+
 import objc
 import ImageCaptureCore
 from Cocoa import NSObject
+from Cocoa import NSURL
 from Cocoa import CGRect, CGPoint
 from PyObjCTools import AppHelper
 
@@ -8,9 +11,19 @@ from .browser import list_scanner_devices
 from .exceptions import DeviceUnavailableError
 
 
+FILE_EXT_TO_OUTPUT_FORMATS = {
+    ".tiff": "public.tiff",
+    ".png": "public.png",
+    ".jpeg": "public.jpeg",
+}
+
+
 class DeviceBrowserDelegate2(NSObject):
 
     scanner_id = None
+    output_dir_url = None
+    output_file_name = None
+    output_format_uti = None
 
     def init(self):
         self = objc.super(DeviceBrowserDelegate2, self).init()
@@ -26,6 +39,10 @@ class DeviceBrowserDelegate2(NSObject):
 
             self._scanner_device = device
             self._scanner_device.setDelegate_(self._scanner_device_delegate)
+            self._scanner_device.setDownloadsDirectory_(self.output_dir_url)
+            self._scanner_device.setDocumentName_(self.output_file_name)
+            self._scanner_device.setDocumentUTI_(self.output_format_uti)
+
             self._scanner_device.requestOpenSession()
 
     def deviceBrowser_didRemoveDevice_moreGoing(
@@ -99,17 +116,47 @@ def scan_document(
 
     :raises DeviceUnavailableError: if requested device is not available or if
         no device are available at all.
+    :raises ValueError: if file extiension/format is not supported.
     """
 
-    # Find the id of the first available scanner if no one is requested
+    # Find the id of the first available scanner if none is requested
     if not scanner_id:
         scanners = list(list_scanner_devices())
         if not scanners:
             raise DeviceUnavailableError("No scanner device available.")
         scanner_id = scanners[0]["persistentIDString"]
 
+    # Output folder and file name
+    output_file_path = pathlib.Path(output_file_path)
+
+    if output_file_path.is_file():
+        # Remove file if already exists as the output file will be named
+        # "<name> 1.ext" else...
+        output_file_path.unlink()
+
+    output_dir_url = NSURL.alloc().initFileURLWithPath_(
+        output_file_path.absolute().parent.as_posix()
+    )
+
+    output_file_name = output_file_path.with_suffix("").name
+
+    # Output file format
+    if output_file_path.suffix in FILE_EXT_TO_OUTPUT_FORMATS:
+        output_format_uti = FILE_EXT_TO_OUTPUT_FORMATS[output_file_path.suffix]
+    else:
+        raise ValueError(
+            "Unsupported file extension '%s'. The extension must be one of %s."
+            % (
+                output_file_path.suffix,
+                ", ".join(['"%s"' % k for k in FILE_EXT_TO_OUTPUT_FORMATS.keys()]),
+            )
+        )
+
     browser_delegate = DeviceBrowserDelegate2.alloc().init()
     browser_delegate.scanner_id = scanner_id
+    browser_delegate.output_dir_url = output_dir_url
+    browser_delegate.output_file_name = output_file_name
+    browser_delegate.output_format_uti = output_format_uti
 
     browser = ImageCaptureCore.ICDeviceBrowser.alloc().init()
     browser.setDelegate_(browser_delegate)
