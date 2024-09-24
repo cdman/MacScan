@@ -4,12 +4,16 @@ MacScan
 **MacScan** is a simple **Python library** and **CLI tool** to scan document on
 **macOS** using the ImageCaptureCore_ API.
 
+Note: this project has been archived. You might want to take a look at
+scanner-cli_  which is being actively developed.
+
 **IMPORTANT:** This library may not work with Apple Python (the Python version
 distributed by Apple). Please use official Python version from python.org_ if
 you encounter any issue.
 
 .. _ImageCaptureCore: https://developer.apple.com/documentation/imagecapturecore
 .. _python.org: https://www.python.org/downloads/macos/
+.. _scanner-cli: https://github.com/zegman/scanner-cli
 
 
 Requirements
